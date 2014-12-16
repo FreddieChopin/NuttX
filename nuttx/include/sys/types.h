@@ -245,6 +245,9 @@ typedef CODE int (*main_t)(int argc, char *argv[]);
 
 #endif
 
+// added by Freddie Chopin
+typedef unsigned int wint_t;
+
 /****************************************************************************
  * Global Function Prototypes
  ****************************************************************************/
