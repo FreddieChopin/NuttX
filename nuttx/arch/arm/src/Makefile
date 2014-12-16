@@ -34,7 +34,7 @@
 ############################################################################
 
 -include $(TOPDIR)/Make.defs
--include chip/Make.defs
+-include $(CHIP_SRC)/Make.defs
 
 ifeq ($(CONFIG_ARCH_CORTEXA5),y)   # Cortex-A5 is ARMv7-A
 ARCH_SUBDIR = armv7-a
@@ -61,7 +61,7 @@ endif
 ifeq ($(CONFIG_WINDOWS_NATIVE),y)
   ARCH_SRCDIR = $(TOPDIR)\arch\$(CONFIG_ARCH)\src
   NUTTX = "$(TOPDIR)\nuttx$(EXEEXT)"
-  CFLAGS += -I$(ARCH_SRCDIR)\chip
+  CFLAGS += -I$(CHIP_SRC)
   CFLAGS += -I$(ARCH_SRCDIR)\common
   CFLAGS += -I$(ARCH_SRCDIR)\$(ARCH_SUBDIR)
   CFLAGS += -I$(TOPDIR)\sched
@@ -69,13 +69,13 @@ else
   ARCH_SRCDIR = $(TOPDIR)/arch/$(CONFIG_ARCH)/src
 ifeq ($(WINTOOL),y)
   NUTTX = "${shell cygpath -w $(TOPDIR)/nuttx$(EXEEXT)}"
-  CFLAGS += -I "${shell cygpath -w $(ARCH_SRCDIR)/chip}"
+  CFLAGS += -I "${shell cygpath -w $(CHIP_SRC)}"
   CFLAGS += -I "${shell cygpath -w $(ARCH_SRCDIR)/common}"
   CFLAGS += -I "${shell cygpath -w $(ARCH_SRCDIR)/$(ARCH_SUBDIR)}"
   CFLAGS += -I "${shell cygpath -w $(TOPDIR)/sched}"
 else
   NUTTX = "$(TOPDIR)/nuttx$(EXEEXT)"
-  CFLAGS += -I$(ARCH_SRCDIR)/chip
+  CFLAGS += -I$(CHIP_SRC)
   CFLAGS += -I$(ARCH_SRCDIR)/common
   CFLAGS += -I$(ARCH_SRCDIR)/$(ARCH_SUBDIR)
   CFLAGS += -I$(TOPDIR)/sched
@@ -120,25 +120,25 @@ EXTRA_LIBPATHS ?=
 LINKLIBS ?=
 
 ifeq ($(CONFIG_WINDOWS_NATIVE),y)
-  BOARDMAKE = $(if $(wildcard .\board\Makefile),y,)
+  BOARDMAKE = $(if $(wildcard $(BOARD_SRC)\Makefile),y,)
   LIBPATHS += -L"$(TOPDIR)\lib"
 ifeq ($(BOARDMAKE),y)
-  LIBPATHS += -L"$(TOPDIR)\arch\$(CONFIG_ARCH)\src\board"
+  LIBPATHS += -L"$(BOARD_SRC)"
 endif
 
 else
-  BOARDMAKE = $(if $(wildcard ./board/Makefile),y,)
+  BOARDMAKE = $(if $(wildcard $(BOARD_SRC)/Makefile),y,)
 
 ifeq ($(WINTOOL),y)
   LIBPATHS += -L"${shell cygpath -w "$(TOPDIR)/lib"}"
 ifeq ($(BOARDMAKE),y)
-  LIBPATHS += -L"${shell cygpath -w "$(TOPDIR)/arch/$(CONFIG_ARCH)/src/board"}"
+  LIBPATHS += -L"${shell cygpath -w "$(BOARD_SRC)"}"
 endif
 
 else
   LIBPATHS += -L"$(TOPDIR)/lib"
 ifeq ($(BOARDMAKE),y)
-  LIBPATHS += -L"$(TOPDIR)/arch/$(CONFIG_ARCH)/src/board"
+  LIBPATHS += -L"$(BOARD_SRC)"
 endif
 endif
 endif
@@ -151,13 +151,13 @@ endif
 LIBGCC = "${shell "$(CC)" $(ARCHCPUFLAGS) -print-libgcc-file-name}"
 GCC_LIBDIR := ${shell dirname $(LIBGCC)}
 
-VPATH += chip
+VPATH += $(CHIP_SRC_MSYS)
 VPATH += common
 VPATH += $(ARCH_SUBDIR)
 
 all: $(HEAD_OBJ) $(BIN)
 
-.PHONY: board/libboard$(LIBEXT)
+.PHONY: $(BOARD_SRC)/libboard$(LIBEXT)
 
 $(AOBJS) $(UAOBJS) $(HEAD_OBJ): %$(OBJEXT): %.S
 	$(call ASSEMBLE, $<, $@)
@@ -171,10 +171,10 @@ $(BIN) $(KBIN): $(OBJS)
 $(UBIN): $(UOBJS)
 	$(call ARCHIVE, $@, $(UOBJS))
 
-board/libboard$(LIBEXT):
-	$(Q) $(MAKE) -C board TOPDIR="$(TOPDIR)" libboard$(LIBEXT) EXTRADEFINES=$(EXTRADEFINES)
+$(BOARD_SRC)/libboard$(LIBEXT):
+	$(Q) $(MAKE) -C $(BOARD_SRC) TOPDIR="$(TOPDIR)" libboard$(LIBEXT) EXTRADEFINES=$(EXTRADEFINES)
 
-nuttx$(EXEEXT): $(HEAD_OBJ) board/libboard$(LIBEXT)
+nuttx$(EXEEXT): $(HEAD_OBJ) $(BOARD_SRC)/libboard$(LIBEXT)
 	$(Q) echo "LD: nuttx"
 	$(Q) $(LD) --entry=__start $(LDFLAGS) $(LIBPATHS) $(EXTRA_LIBPATHS) \
 		-o $(NUTTX) $(HEAD_OBJ) $(EXTRA_OBJS) \
@@ -189,7 +189,7 @@ endif
 # Note that there may not be a head object if layout is handled
 # by the linker configuration.
 
-export_startup: board/libboard$(LIBEXT) $(STARTUP_OBJS)
+export_startup: $(BOARD_SRC)/libboard$(LIBEXT) $(STARTUP_OBJS)
 ifneq ($(STARTUP_OBJS),)
 	$(Q) if [ -d "$(EXPORT_DIR)/startup" ]; then \
 		cp -f $(STARTUP_OBJS) "$(EXPORT_DIR)/startup/."; \
@@ -201,9 +201,9 @@ endif
 
 # Dependencies
 
-.depend: Makefile chip/Make.defs $(SRCS)
+.depend: Makefile $(CHIP_SRC)/Make.defs $(SRCS)
 ifeq ($(BOARDMAKE),y)
-	$(Q) $(MAKE) -C board TOPDIR="$(TOPDIR)" depend
+	$(Q) $(MAKE) -C $(BOARD_SRC) TOPDIR="$(TOPDIR)" depend
 endif
 	$(Q) $(MKDEP) $(patsubst %,--dep-path %,$(subst :, ,$(VPATH))) \
 	 "$(CC)" -- $(CFLAGS) -- $(SRCS) >Make.dep
@@ -213,7 +213,7 @@ depend: .depend
 
 clean:
 ifeq ($(BOARDMAKE),y)
-	$(Q) $(MAKE) -C board TOPDIR="$(TOPDIR)" clean
+	$(Q) $(MAKE) -C $(BOARD_SRC) TOPDIR="$(TOPDIR)" clean
 endif
 	$(call DELFILE, $(KBIN))
 	$(call DELFILE, $(UBIN))
@@ -222,7 +222,7 @@ endif
 
 distclean: clean
 ifeq ($(BOARDMAKE),y)
-	$(Q) $(MAKE) -C board TOPDIR="$(TOPDIR)" distclean
+	$(Q) $(MAKE) -C $(BOARD_SRC) TOPDIR="$(TOPDIR)" distclean
 endif
 	$(call DELFILE, Make.dep)
 	$(call DELFILE, .depend)

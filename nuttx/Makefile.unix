@@ -33,7 +33,8 @@
 #
 ############################################################################
 
-TOPDIR := ${shell pwd | sed -e 's/ /\\ /g'}
+TOPDIR ?= ${shell pwd | sed -e 's/ /\\ /g'}
+TOPDIR_MSYS = ${shell pwd | sed -e 's/ /\\ /g'}
 -include $(TOPDIR)/.config
 include $(TOPDIR)/tools/Config.mk
 -include $(TOPDIR)/Make.defs
@@ -76,6 +77,10 @@ ifeq ($(CONFIG_ARCH_BOARD_CUSTOM),y)
 else
   BOARD_DIR = configs/$(CONFIG_ARCH_BOARD)
 endif
+
+export BOARD_SRC = $(TOPDIR)/configs/$(CONFIG_ARCH_BOARD)/src
+export CHIP_SRC = $(TOPDIR)/arch/$(CONFIG_ARCH)/src/$(CONFIG_ARCH_CHIP)
+export CHIP_SRC_MSYS = $(TOPDIR_MSYS)/arch/$(CONFIG_ARCH)/src/$(CONFIG_ARCH_CHIP)
 
 # CONFIG_APPS_DIR can be over-ridden from the command line or in the .config file.
 # The default value of CONFIG_APPS_DIR is ../apps.  Ultimately, the application
@@ -295,20 +300,6 @@ include/arch/board: include/arch Make.defs include/arch
 	@echo "LN: include/arch/board to $(BOARD_DIR)/include"
 	$(Q) $(DIRLINK) $(TOPDIR)/$(BOARD_DIR)/include include/arch/board
 
-# Link the configs/<board-name>/src dir to arch/<arch-name>/src/board
-
-$(ARCH_SRC)/board: Make.defs
-	@echo "LN: $(ARCH_SRC)/board to $(BOARD_DIR)/src"
-	$(Q) $(DIRLINK) $(TOPDIR)/$(BOARD_DIR)/src $(ARCH_SRC)/board
-
-# Link arch/<arch-name>/include/<chip-name> to arch/<arch-name>/include/chip
-
-$(ARCH_SRC)/chip: Make.defs
-ifneq ($(CONFIG_ARCH_CHIP),)
-	@echo "LN: $(ARCH_SRC)/chip to $(ARCH_SRC)/$(CONFIG_ARCH_CHIP)"
-	$(Q) $(DIRLINK) $(TOPDIR)/$(ARCH_SRC)/$(CONFIG_ARCH_CHIP) $(ARCH_SRC)/chip
-endif
-
 # Link arch/<arch-name>/src/<chip-name> to arch/<arch-name>/src/chip
 
 include/arch/chip: include/arch Make.defs
@@ -317,7 +308,7 @@ ifneq ($(CONFIG_ARCH_CHIP),)
 	$(Q) $(DIRLINK) $(TOPDIR)/$(ARCH_INC)/$(CONFIG_ARCH_CHIP) include/arch/chip
 endif
 
-dirlinks: include/arch include/arch/board include/arch/chip $(ARCH_SRC)/board $(ARCH_SRC)/chip include/apps
+dirlinks: include/arch include/arch/board include/arch/chip include/apps
 
 # context
 #

@@ -45,21 +45,17 @@ LDSCRIPT = f411re.ld
 endif
 endif
 
-ifeq ($(WINTOOL),y)
-  # Windows-native toolchains
-  DIRLINK = $(TOPDIR)/tools/copydir.sh
-  DIRUNLINK = $(TOPDIR)/tools/unlink.sh
-  MKDEP = $(TOPDIR)/tools/mknulldeps.sh
-  ARCHINCLUDES = -I. -isystem "${shell cygpath -w $(TOPDIR)/include}"
-  ARCHXXINCLUDES = -I. -isystem "${shell cygpath -w $(TOPDIR)/include}" -isystem "${shell cygpath -w $(TOPDIR)/include/cxx}"
-  ARCHSCRIPT = -T "${shell cygpath -w $(TOPDIR)/configs/$(CONFIG_ARCH_BOARD)/scripts/$(LDSCRIPT)}"
+ifeq ($(OS),Windows_NT)
+	DIRLINK = $(TOPDIR)/tools/copydir.sh
 else
-  # Linux/Cygwin-native toolchain
-  MKDEP = $(TOPDIR)/tools/mkdeps.sh
-  ARCHINCLUDES = -I. -isystem $(TOPDIR)/include
-  ARCHXXINCLUDES = -I. -isystem $(TOPDIR)/include -isystem $(TOPDIR)/include/cxx
-  ARCHSCRIPT = -T$(TOPDIR)/configs/$(CONFIG_ARCH_BOARD)/scripts/$(LDSCRIPT)
+	DIRLINK = $(TOPDIR)/tools/link.sh
 endif
+
+DIRUNLINK = $(TOPDIR)/tools/unlink.sh
+MKDEP = $(TOPDIR)/tools/mkdeps.sh
+ARCHINCLUDES = -I. -isystem $(TOPDIR)/include
+ARCHXXINCLUDES = -I. -isystem $(TOPDIR)/include -isystem $(TOPDIR)/include/cxx
+ARCHSCRIPT = -T$(TOPDIR)/configs/$(CONFIG_ARCH_BOARD)/scripts/$(LDSCRIPT)
 
 CC = $(CROSSDEV)gcc
 CXX = $(CROSSDEV)g++
