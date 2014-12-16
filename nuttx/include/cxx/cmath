@@ -121,7 +121,7 @@ namespace std
   using ::ldexpl;
   using ::logl;
   using ::log10l;
-  using ::log2l;
+  //using ::log2l;
   using ::modfl;
   using ::roundl;
   using ::powl;
