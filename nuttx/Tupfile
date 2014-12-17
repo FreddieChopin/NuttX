@@ -1,0 +1,29 @@
+#
+# file: nuttx/Tupfile
+#
+# author: Freddie Chopin, http://www.freddiechopin.info http://www.distortec.com
+# date: 2014-12-17
+#
+
+include_rules
+
+LDFLAGS += $(ARCHSCRIPT)
+LIBPATHS += -L$(TOPDIR)/sched
+LIBPATHS += -L$(TOPDIR)/arch/arm/src
+LIBPATHS += -L$(TOPDIR)/mm
+LIBPATHS += -L$(TOPDIR)/libc
+LIBPATHS += -L$(TOPDIR)/libxx
+LIBPATHS += -L$(APPDIR)
+LIBPATHS += -L$(TOPDIR)/fs
+LIBPATHS += -L$(TOPDIR)/drivers
+LIBPATHS += -L$(TOPDIR)/binfmt
+LIBPATHS += -L$(TOPDIR)/configs/@(ARCH_BOARD)/src
+LDLIBS += -lsched -larch -lmm -llib -llibxx -lapps -lfs -ldrivers -lbinfmt
+LIBGCC += "`$(CC) $(ARCHCPUFLAGS) -print-libgcc-file-name`"
+
+: |> !ln |> nuttx.elf
+: nuttx.elf |> !hex |> nuttx.hex
+: nuttx.elf |> !bin |> nuttx.bin
+: nuttx.elf |> !dmp |> nuttx.dmp
+: nuttx.elf |> !lss |> nuttx.lss
+: nuttx.elf |> !size |>

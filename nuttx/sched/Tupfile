@@ -1,0 +1,288 @@
+#
+# file: nuttx/sched/Tupfile
+#
+# author: Freddie Chopin, http://www.freddiechopin.info http://www.distortec.com
+# date: 2014-12-17
+#
+
+include_rules
+
+CFLAGS += -D__KERNEL__
+
+# --- init ---
+
+CSRCS += init/os_start.c init/os_bringup.c
+
+# --- init end ---
+
+# --- irq ---
+
+CSRCS += irq/irq_initialize.c irq/irq_attach.c irq/irq_dispatch.c irq/irq_unexpectedisr.c
+
+# --- irq end ---
+
+# --- paging ---
+
+ifneq ($(CONFIG_PAGING),y)
+
+CSRCS += paging/pg_miss.c paging/pg_worker.c
+
+endif
+
+# --- paging end ---
+
+# --- group ---
+
+CSRCS += group/group_create.c group/group_join.c group/group_leave.c group/group_find.c
+CSRCS += group/group_setupstreams.c group/group_setupidlefiles.c group/group_setuptaskfiles.c
+CSRCS += group/group_foreachchild.c group/group_killchildren.c
+
+ifeq ($(CONFIG_SCHED_HAVE_PARENT),y)
+CSRCS += group/task_reparent.c
+ifeq ($(CONFIG_SCHED_CHILD_STATUS),y)
+CSRCS += group/group_childstatus.c
+endif
+endif
+
+ifeq ($(CONFIG_ARCH_ADDRENV),y)
+CSRCS += group/group_addrenv.c
+endif
+
+ifneq ($(CONFIG_DISABLE_SIGNALS),y)
+CSRCS += group/group_signal.c
+endif
+
+ifeq ($(CONFIG_BUILD_PROTECTED),y)
+CSRCS += group/group_malloc.c group/group_zalloc.c group/group_free.c
+else
+ifeq ($(CONFIG_BUILD_KERNEL),y)
+CSRCS += group/group_malloc.c group/group_zalloc.c group/group_free.c
+endif
+endif
+
+# --- group end ---
+
+# --- sched ---
+
+CSRCS += sched/sched_garbage.c sched/sched_getfiles.c
+CSRCS += sched/sched_addreadytorun.c sched/sched_removereadytorun.c sched/sched_addprioritized.c
+CSRCS += sched/sched_mergepending.c sched/sched_addblocked.c sched/sched_removeblocked.c
+CSRCS += sched/sched_free.c sched/sched_gettcb.c sched/sched_verifytcb.c sched/sched_releasetcb.c
+CSRCS += sched/sched_getsockets.c sched/sched_getstreams.c
+CSRCS += sched/sched_setparam.c sched/sched_setpriority.c sched/sched_getparam.c
+CSRCS += sched/sched_setscheduler.c sched/sched_getscheduler.c
+CSRCS += sched/sched_yield.c sched/sched_rrgetinterval.c sched/sched_foreach.c
+CSRCS += sched/sched_lock.c sched/sched_unlock.c sched/sched_lockcount.c sched/sched_self.c
+
+ifeq ($(CONFIG_PRIORITY_INHERITANCE),y)
+CSRCS += sched/sched_reprioritize.c
+endif
+
+ifeq ($(CONFIG_SCHED_WAITPID),y)
+CSRCS += sched/sched_waitpid.c
+ifeq ($(CONFIG_SCHED_HAVE_PARENT),y)
+CSRCS += sched/sched_waitid.c sched/sched_wait.c
+endif
+endif
+
+ifeq ($(CONFIG_SCHED_CPULOAD),y)
+CSRCS += sched/sched_cpuload.c
+endif
+
+ifeq ($(CONFIG_SCHED_TICKLESS),y)
+CSRCS += sched/sched_timerexpiration.c
+else
+CSRCS += sched/sched_processtimer.c
+endif
+
+# --- sched end ---
+
+# --- task ---
+
+CSRCS += task/task_create.c task/task_init.c task/task_setup.c task/task_activate.c
+CSRCS += task/task_start.c task/task_delete.c task/task_exit.c task/task_exithook.c
+CSRCS += task/task_recover.c task/task_restart.c task/task_spawnparms.c
+CSRCS += task/task_terminate.c task/task_getgroup.c task/task_prctl.c task/task_getpid.c
+CSRCS += task/exit.c
+
+ifeq ($(CONFIG_ARCH_HAVE_VFORK),y)
+ifeq ($(CONFIG_SCHED_WAITPID),y)
+CSRCS += task/task_vfork.c
+endif
+endif
+
+ifneq ($(CONFIG_BUILD_KERNEL),y)
+CSRCS += task/task_spawn.c
+endif
+
+ifneq ($(CONFIG_BINFMT_DISABLE),y)
+ifeq ($(CONFIG_LIBC_EXECFUNCS),y)
+CSRCS += task/task_execv.c task/task_posixspawn.c
+endif
+endif
+
+ifeq ($(CONFIG_SCHED_STARTHOOK),y)
+CSRCS += task/task_starthook.c
+endif
+
+ifeq ($(CONFIG_SCHED_ATEXIT),y)
+CSRCS += task/task_atexit.c
+endif
+
+ifeq ($(CONFIG_SCHED_ONEXIT),y)
+CSRCS += task/task_onexit.c
+endif
+
+# --- task end ---
+
+# --- errno ---
+
+CSRCS += errno/errno_getptr.c
+
+ifeq ($(CONFIG_LIB_SYSCALL),y)
+CSRCS += errno/errno_get.c errno/errno_set.c
+endif
+
+# --- errno end ---
+
+# --- wdog ---
+
+CSRCS += wdog/wd_initialize.c wdog/wd_create.c wdog/wd_start.c wdog/wd_cancel.c wdog/wd_delete.c
+CSRCS += wdog/wd_gettime.c
+
+# --- wdog end ---
+
+# --- semaphore ---
+
+CSRCS += semaphore/sem_destroy.c semaphore/sem_wait.c semaphore/sem_trywait.c semaphore/sem_timedwait.c
+CSRCS += semaphore/sem_post.c
+
+ifneq ($(CONFIG_DISABLE_SIGNALS),y)
+CSRCS += semaphore/sem_waitirq.c
+endif
+
+ifeq ($(CONFIG_PRIORITY_INHERITANCE),y)
+CSRCS += semaphore/sem_initialize.c semaphore/sem_holder.c
+endif
+
+# --- semaphore end ---
+
+# --- signal ---
+
+ifneq ($(CONFIG_DISABLE_SIGNALS),y)
+
+CSRCS += signal/sig_initialize.c
+CSRCS += signal/sig_action.c signal/sig_procmask.c signal/sig_pending.c signal/sig_suspend.c
+CSRCS += signal/sig_kill.c signal/sig_queue.c signal/sig_waitinfo.c signal/sig_timedwait.c
+CSRCS += signal/sig_findaction.c signal/sig_allocatependingsigaction.c
+CSRCS += signal/sig_releasependingsigaction.c signal/sig_unmaskpendingsignal.c
+CSRCS += signal/sig_removependingsignal.c signal/sig_releasependingsignal.c signal/sig_lowest.c
+CSRCS += signal/sig_mqnotempty.c signal/sig_cleanup.c signal/sig_dispatch.c signal/sig_deliver.c
+CSRCS += signal/sig_pause.c signal/sig_nanosleep.c
+
+endif
+
+# --- signal end ---
+
+# --- pthread ---
+
+ifneq ($(CONFIG_DISABLE_PTHREAD),y)
+
+CSRCS += pthread/pthread_create.c pthread/pthread_exit.c pthread/pthread_join.c pthread/pthread_detach.c
+CSRCS += pthread/pthread_yield.c pthread/pthread_getschedparam.c pthread/pthread_setschedparam.c
+CSRCS += pthread/pthread_mutexinit.c pthread/pthread_mutexdestroy.c
+CSRCS += pthread/pthread_mutexlock.c pthread/pthread_mutextrylock.c pthread/pthread_mutexunlock.c
+CSRCS += pthread/pthread_condinit.c pthread/pthread_conddestroy.c
+CSRCS += pthread/pthread_condwait.c pthread/pthread_condsignal.c pthread/pthread_condbroadcast.c
+CSRCS += pthread/pthread_barrierinit.c pthread/pthread_barrierdestroy.c pthread/pthread_barrierwait.c
+CSRCS += pthread/pthread_cancel.c pthread/pthread_setcancelstate.c
+CSRCS += pthread/pthread_keycreate.c pthread/pthread_setspecific.c pthread/pthread_getspecific.c pthread/pthread_keydelete.c
+CSRCS += pthread/pthread_initialize.c pthread/pthread_completejoin.c pthread/pthread_findjoininfo.c
+CSRCS += pthread/pthread_once.c pthread/pthread_release.c pthread/pthread_setschedprio.c
+
+ifneq ($(CONFIG_DISABLE_SIGNALS),y)
+CSRCS += pthread/pthread_condtimedwait.c pthread/pthread_kill.c pthread/pthread_sigmask.c
+endif
+
+endif
+
+# --- pthread end ---
+
+# --- mqueue ---
+
+ifneq ($(CONFIG_DISABLE_MQUEUE),y)
+
+CSRCS += mqueue/mq_send.c mqueue/mq_timedsend.c mqueue/mq_sndinternal.c mqueue/mq_receive.c
+CSRCS += mqueue/mq_timedreceive.c mqueue/mq_rcvinternal.c mqueue/mq_initialize.c
+CSRCS += mqueue/mq_descreate.c mqueue/mq_desclose.c mqueue/mq_msgfree.c mqueue/mq_msgqalloc.c
+CSRCS += mqueue/mq_msgqfree.c mqueue/mq_release.c mqueue/mq_recover.c
+
+ifneq ($(CONFIG_DISABLE_SIGNALS),y)
+CSRCS += mqueue/mq_waitirq.c mqueue/mq_notify.c
+endif
+
+endif
+
+# --- mqueue end ---
+
+# --- clock ---
+
+CSRCS += clock/clock_initialize.c clock/clock_settime.c clock/clock_gettime.c clock/clock_getres.c
+CSRCS += clock/clock_time2ticks.c clock/clock_abstime2ticks.c clock/clock_ticks2time.c
+CSRCS += clock/clock_gettimeofday.c clock/clock_systimer.c clock/clock_systimespec.c
+
+# --- clock end ---
+
+# --- timer ---
+
+ifneq ($(CONFIG_DISABLE_POSIX_TIMERS),y)
+
+CSRCS += timer/timer_initialize.c timer/timer_create.c timer/timer_delete.c
+CSRCS += timer/timer_getoverrun.c timer/timer_gettime.c timer/timer_settime.c
+CSRCS += timer/timer_release.c
+
+endif
+
+# --- timer end ---
+
+# --- environ ---
+
+ifneq ($(CONFIG_DISABLE_ENVIRON),y)
+
+CSRCS += environ/env_getenvironptr.c environ/env_dup.c environ/env_release.c environ/env_findvar.c
+CSRCS += environ/env_removevar.c environ/env_clearenv.c environ/env_getenv.c environ/env_putenv.c
+CSRCS += environ/env_setenv.c environ/env_unsetenv.c
+
+endif
+
+# --- environ end ---
+
+# --- wqueue ---
+
+ifeq ($(CONFIG_SCHED_WORKQUEUE),y)
+
+CSRCS += wqueue/kwork_queue.c wqueue/kwork_process.c wqueue/kwork_cancel.c wqueue/kwork_signal.c
+
+# Add high priority work queue files
+
+ifeq ($(CONFIG_SCHED_HPWORK),y)
+CSRCS += wqueue/kwork_hpthread.c
+endif
+
+# Add low priority work queue files
+
+ifeq ($(CONFIG_SCHED_LPWORK),y)
+CSRCS += wqueue/kwork_lpthread.c
+ifeq ($(CONFIG_PRIORITY_INHERITANCE),y)
+CSRCS += wqueue/kwork_inherit.c
+endif
+endif
+
+endif
+
+# --- wqueue end ---
+
+: foreach $(ASRCS) |> !as |> {objects}
+: foreach $(CSRCS) |> !cc |> {objects}
+: foreach $(CXXSRCS) |> !cxx |> {objects}
+: {objects} |> !ar |> lib%d.a

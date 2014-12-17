@@ -1,0 +1,669 @@
+#
+# file: nuttx/drivers/Tupfile
+#
+# author: Freddie Chopin, http://www.freddiechopin.info http://www.distortec.com
+# date: 2014-12-17
+#
+
+include_rules
+
+CFLAGS += -D__KERNEL__
+
+# --- analog ---
+
+# Check for DAC devices
+
+ifeq ($(CONFIG_DAC),y)
+
+# Include the common DAC character driver
+
+CSRCS += analog/dac.c
+
+# Include DAC device drivers
+
+ifeq ($(CONFIG_DAC_AD5410),y)
+  CSRCS += analog/ad5410.c
+endif
+endif
+
+# Check for ADC devices
+
+ifeq ($(CONFIG_ADC),y)
+
+# Include the common ADC character driver
+
+CSRCS += analog/adc.c
+
+# Amplifiers/multiplexers
+
+ifeq ($(CONFIG_ADC_PGA11X),y)
+  CSRCS += analog/pga11x.c
+endif
+
+# Include ADC device drivers
+
+ifeq ($(CONFIG_ADC_ADS125X),y)
+  CSRCS += analog/ads1255.c
+endif
+endif
+
+# Add analog driver build support (the nested if-then-else implements an OR)
+
+ifeq ($(CONFIG_DAC),y)
+  CFLAGS += -I$(TOPDIR)/drivers/analog
+else
+ifeq ($(CONFIG_ADC),y)
+  CFLAGS += -I$(TOPDIR)/drivers/analog
+endif
+endif
+
+# --- analog end ---
+
+# --- audio ---
+
+ifeq ($(CONFIG_AUDIO_DEVICES),y)
+
+ifeq ($(CONFIG_VS1053),y)
+CSRCS += audio/vs1053.c
+endif
+
+ifeq ($(CONFIG_AUDIO_WM8904),y)
+CSRCS += audio/wm8904.c
+ifeq ($(CONFIG_WM8904_REGDUMP),y)
+CSRCS += audio/wm8904_debug.c
+else
+ifeq ($(CONFIG_WM8904_CLKDEBUG),y)
+CSRCS += audio/wm8904_debug.c
+endif
+endif
+endif
+
+ifeq ($(CONFIG_AUDIO_NULL),y)
+CSRCS += audio/audio_null.c
+endif
+
+ifeq ($(CONFIG_AUDIO_I2SCHAR),y)
+CSRCS += audio/i2schar.c
+endif
+
+endif
+
+# --- audio end ---
+
+# --- bch ---
+
+ifneq ($(CONFIG_NFILE_DESCRIPTORS),0)
+ifneq ($(CONFIG_DISABLE_MOUNTPOINT),y)
+
+# Include BCH driver
+
+CSRCS += bch/bchlib_setup.c bch/bchlib_teardown.c bch/bchlib_read.c bch/bchlib_write.c \
+		 bch/bchlib_cache.c bch/bchlib_sem.c bch/bchdev_register.c bch/bchdev_unregister.c \
+		 bch/bchdev_driver.c
+
+# Include BCH driver build support
+
+CFLAGS += -I$(TOPDIR)/drivers/bch
+
+endif
+endif
+
+# --- bch end ---
+
+# --- input ---
+
+ifeq ($(CONFIG_INPUT),y)
+
+# Include the selected touchscreen drivers
+
+ifeq ($(CONFIG_INPUT_TSC2007),y)
+  CSRCS += input/tsc2007.c
+endif
+
+ifeq ($(CONFIG_INPUT_ADS7843E),y)
+  CSRCS += input/ads7843e.c
+endif
+
+ifeq ($(CONFIG_INPUT_MAX11802),y)
+  CSRCS += input/max11802.c
+endif
+
+ifeq ($(CONFIG_INPUT_MXT),y)
+  CSRCS += input/mxt.c
+endif
+
+ifeq ($(CONFIG_INPUT_STMPE811),y)
+  CSRCS += input/stmpe811_base.c
+ifneq ($(CONFIG_INPUT_STMPE811_TSC_DISABLE),y)
+  CSRCS += input/stmpe811_tsc.c
+endif
+ifneq ($(CONFIG_INPUT_STMPE811_GPIO_DISABLE),y)
+  CSRCS += input/stmpe811_gpio.c
+endif
+ifneq ($(CONFIG_INPUT_STMPE811_ADC_DISABLE),y)
+  CSRCS += input/stmpe811_adc.c
+endif
+ifneq ($(CONFIG_INPUT_STMPE811_TEMP_DISABLE),y)
+  CSRCS += input/stmpe811_temp.c
+endif
+endif
+
+CFLAGS += -I$(TOPDIR)/drivers/input
+endif
+
+# --- input end ---
+
+# --- lcd ---
+
+ifeq ($(CONFIG_NX_LCDDRIVER),y)
+
+# Include LCD drivers
+
+ifeq ($(CONFIG_LCD_P14201),y)
+  CSRCS += lcd/p14201.c
+endif
+
+ifeq ($(CONFIG_LCD_NOKIA6100),y)
+  CSRCS += lcd/nokia6100.c
+endif
+
+ifeq ($(CONFIG_LCD_UG2864AMBAG01),y)
+  CSRCS += ug-2864ambag01.c
+endif
+
+ifeq ($(CONFIG_LCD_UG9664HSWAG01),y)
+  CSRCS += ug-9664hswag01.c
+endif
+
+ifeq ($(CONFIG_LCD_SSD1306),y)
+  CSRCS += lcd/ssd1306.c
+endif
+
+ifeq ($(CONFIG_LCD_SSD1289),y)
+  CSRCS += lcd/ssd1289.c
+endif
+
+ifeq ($(CONFIG_LCD_MIO283QT2),y)
+  CSRCS += lcd/mio283qt2.c
+endif
+
+ifeq ($(CONFIG_LCD_MIO283QT9A),y)
+  CSRCS += lcd/mio283qt9a.c
+endif
+
+ifeq ($(CONFIG_LCD_ST7565),y)
+  CSRCS += lcd/st7565.c
+endif
+
+ifeq ($(CONFIG_LCD_ST7567),y)
+  CSRCS += lcd/st7567.c
+endif
+
+ifeq ($(CONFIG_LCD_SHARP_MEMLCD),y)
+  CSRCS += lcd/memlcd.c
+endif
+
+ifeq ($(CONFIG_LCD_ILI9341),y)
+  CSRCS += lcd/ili9341.c
+endif
+
+CFLAGS += -I$(TOPDIR)/drivers/lcd
+endif
+
+# --- lcd end ---
+
+# --- mmcsd ---
+
+ifeq ($(CONFIG_MMCSD),y)
+
+# Include MMC/SD drivers
+
+ifeq ($(CONFIG_MMCSD_SDIO),y)
+CSRCS += mmcsd/mmcsd_sdio.c
+endif
+
+ifeq ($(CONFIG_MMCSD_SPI),y)
+CSRCS += mmcsd/mmcsd_spi.c mmcsd/mmcsd_debug.c
+endif
+
+CFLAGS += -I$(TOPDIR)/drivers/mmcsd
+
+endif
+
+# --- mmcsd end ---
+
+# --- mtd ---
+
+# Include MTD drivers
+
+ifeq ($(CONFIG_MTD),y)
+
+CSRCS += mtd/at45db.c mtd/flash_eraseall.c mtd/ftl.c mtd/m25px.c mtd/ramtron.c mtd/mtd_config.c
+
+ifeq ($(CONFIG_MTD_PARTITION),y)
+CSRCS += mtd/mtd_partition.c
+endif
+
+ifeq ($(CONFIG_MTD_SECT512),y)
+CSRCS += mtd/sector512.c
+endif
+
+ifeq ($(CONFIG_MTD_WRBUFFER),y)
+CSRCS += mtd/mtd_rwbuffer.c
+else
+ifeq ($(CONFIG_MTD_READAHEAD),y)
+CSRCS += mtd/mtd_rwbuffer.c
+endif
+endif
+
+ifeq ($(CONFIG_MTD_NAND),y)
+CSRCS += mtd/mtd_nand.c mtd/mtd_onfi.c mtd/mtd_nandscheme.c mtd/mtd_nandmodel.c mtd/mtd_modeltab.c
+ifeq ($(CONFIG_MTD_NAND_SWECC),y)
+CSRCS += mtd/mtd_nandecc.c mtd/hamming.c
+endif
+endif
+
+ifeq ($(CONFIG_RAMMTD),y)
+CSRCS += mtd/rammtd.c
+endif
+
+ifeq ($(CONFIG_MTD_AT24XX),y)
+CSRCS += mtd/at24xx.c
+endif
+
+ifeq ($(CONFIG_MTD_SST25),y)
+CSRCS += mtd/sst25.c
+endif
+
+ifeq ($(CONFIG_MTD_SST25XX),y)
+CSRCS += mtd/sst25xx.c
+endif
+
+ifeq ($(CONFIG_MTD_SST39FV),y)
+CSRCS += mtd/sst39vf.c
+endif
+
+ifeq ($(CONFIG_MTD_W25),y)
+CSRCS += mtd/w25.c
+endif
+
+ifeq ($(CONFIG_MTD_AT25),y)
+CSRCS += mtd/at25.c
+endif
+
+ifeq ($(CONFIG_MTD_SMART),y)
+ifeq ($(CONFIG_FS_SMARTFS),y)
+CSRCS += mtd/smart.c
+endif
+endif
+
+ifeq ($(CONFIG_FS_PROCFS),y)
+ifneq ($(CONFIG_FS_PROCFS_EXCLUDE_MTD),y)
+CSRCS += mtd/mtd_procfs.c
+endif
+endif
+
+endif
+
+# --- mtd end ---
+
+# --- net ---
+
+ifeq ($(CONFIG_NET),y)
+
+# Include network interface drivers
+
+ifeq ($(CONFIG_NET_DM90x0),y)
+  CSRCS += net/dm90x0.c
+endif
+
+ifeq ($(CONFIG_NET_CS89x0),y)
+  CSRCS += net/cs89x0.c
+endif
+
+ifeq ($(CONFIG_ENC28J60),y)
+  CSRCS += net/enc28j60.c
+endif
+
+ifeq ($(CONFIG_ENCX24J600),y)
+  CSRCS += net/encx24j600.c
+endif
+
+ifeq ($(CONFIG_NET_VNET),y)
+  CSRCS += net/vnet.c
+endif
+
+ifeq ($(CONFIG_NET_E1000),y)
+  CSRCS += net/e1000.c
+endif
+
+ifeq ($(CONFIG_NET_SLIP),y)
+  CSRCS += net/slip.c
+endif
+
+ifeq ($(CONFIG_ARCH_PHY_INTERRUPT),y)
+  CSRCS += net/phy_notify.c
+endif
+
+endif
+
+# --- net end ---
+
+# --- pipes ---
+
+ifneq ($(CONFIG_NFILE_DESCRIPTORS),0)
+
+# Include pipe driver
+
+CSRCS += pipes/pipe.c pipes/fifo.c pipes/pipe_common.c
+
+endif
+
+
+# --- pipes end ---
+
+# --- power ---
+
+POWER_DEPPATH =
+POWER_VPATH =
+POWER_CFLAGS =
+
+# Include power management sources
+
+ifeq ($(CONFIG_PM),y)
+
+CSRCS += power/pm_activity.c power/pm_changestate.c power/pm_checkstate.c power/pm_initialize.c power/pm_register.c power/pm_update.c
+
+POWER_CFLAGS := -I$(TOPDIR)/drivers/power
+
+endif
+
+# Add battery drivers
+
+ifeq ($(CONFIG_BATTERY),y)
+
+CSRCS += power/battery.c
+
+# Add I2C-based battery drivers
+
+ifeq ($(CONFIG_I2C),y)
+
+# Add the MAX1704x I2C-based battery driver
+
+ifeq ($(CONFIG_I2C_MAX1704X),y)
+CSRCS += power/max1704x.c
+endif
+
+endif
+
+POWER_CFLAGS := -I$(TOPDIR)/drivers/power
+
+endif
+
+CFLAGS += $(POWER_CFLAGS)
+
+# --- power end ---
+
+# --- sensors ---
+
+ifeq ($(CONFIG_I2C),y)
+
+ifeq ($(CONFIG_LIS331DL),y)
+  CSRCS += sensors/lis331dl.c
+endif
+
+ifeq ($(CONFIG_I2C_LM75),y)
+  CSRCS += sensors/lm75.c
+endif
+endif
+
+# Quadrature encoder upper half
+
+ifeq ($(CONFIG_QENCODER),y)
+  CSRCS += sensors/qencoder.c
+endif
+
+CFLAGS += -I$(TOPDIR)/drivers/sensors
+
+# --- sensors end ---
+
+# --- sercomm ---
+
+ifneq ($(CONFIG_NFILE_DESCRIPTORS),0)
+
+# The sercomm driver should not be build for all platforms.  Only build it
+# is so configured
+
+ifeq ($(CONFIG_SERCOMM_CONSOLE),y)
+
+# Include serial drivers
+
+CSRCS += sercomm/console.c sercomm/uart.c
+
+endif
+endif
+
+# --- sercomm end ---
+
+# --- serial ---
+
+ifneq ($(CONFIG_NFILE_DESCRIPTORS),0)
+
+# Include serial drivers
+
+CSRCS += serial/serial.c serial/serialirq.c serial/lowconsole.c
+
+ifeq ($(CONFIG_16550_UART),y)
+  CSRCS += serial/uart_16550.c
+endif
+
+endif
+
+# --- serial end ---
+
+# --- spi ---
+
+ifeq ($(CONFIG_SPI),y)
+
+# Include the selected SPI drivers
+
+ifeq ($(CONFIG_SPI_BITBANG),y)
+  CSRCS += spi/spi_bitbang.c
+endif
+
+CFLAGS += -I$(TOPDIR)/drivers/spi
+
+endif
+
+# --- spi end ---
+
+# --- syslog ---
+
+ifeq ($(CONFIG_SYSLOG),y)
+
+# If no special loggin devices are implemented, then the default SYSLOG
+# logic at fs/fs_syslog.c will be used
+
+# (Add other SYSLOG drivers here)
+
+ifeq ($(CONFIG_RAMLOG),y)
+  CSRCS += syslog/ramlog.c
+endif
+
+else
+
+# The RAMLOG can be used even if system logging is not enabled.
+
+ifeq ($(CONFIG_RAMLOG),y)
+
+# Include RAMLOG build support
+
+CSRCS += syslog/ramlog.c
+
+endif
+endif
+
+# --- syslog end ---
+
+# --- usbdev ---
+
+ifeq ($(CONFIG_USBDEV),y)
+
+# Include USB device drivers
+
+ifeq ($(CONFIG_PL2303),y)
+  CSRCS += usbdev/pl2303.c
+endif
+
+ifeq ($(CONFIG_CDCACM),y)
+  CSRCS += usbdev/cdcacm.c usbdev/cdcacm_desc.c
+endif
+
+ifeq ($(CONFIG_USBMSC),y)
+  CSRCS += usbdev/usbmsc.c usbdev/usbmsc_desc.c usbdev/usbmsc_scsi.c
+endif
+
+ifeq ($(CONFIG_USBDEV_COMPOSITE),y)
+  CSRCS += usbdev/composite.c usbdev/composite_desc.c
+endif
+
+ifeq ($(CONFIG_USBDEV_TRACE_STRINGS),y)
+  CSRCS += usbdev/usbdev_strings.c
+endif
+
+CSRCS += usbdev/usbdev_trace.c usbdev/usbdev_trprintf.c
+
+CFLAGS += -I$(TOPDIR)/drivers/usbdev
+
+endif
+
+# --- usbdev end ---
+
+# --- usbhost ---
+
+CSRCS += usbhost/hid_parser.c
+
+ifeq ($(CONFIG_USBHOST),y)
+
+# Include built-in USB host driver logic
+
+CSRCS += usbhost/usbhost_registry.c usbhost/usbhost_registerclass.c usbhost/usbhost_findclass.c
+CSRCS += usbhost/usbhost_enumerate.c usbhost/usbhost_storage.c usbhost/usbhost_devaddr.c
+
+ifeq ($(CONFIG_USBHOST_HIDKBD),y)
+CSRCS += usbhost/usbhost_hidkbd.c
+endif
+
+ifeq ($(CONFIG_USBHOST_HIDMOUSE),y)
+CSRCS += usbhost/usbhost_hidmouse.c
+endif
+
+# HCD debug/trace logic
+
+ifeq ($(CONFIG_USBHOST_TRACE),y)
+CSRCS += usbhost/usbhost_trace.c
+else
+ifeq ($(CONFIG_DEBUG_USB),y)
+CSRCS += usbhost/usbhost_trace.c
+endif
+endif
+
+# Include add-on USB host driver logic if present and selected (see misc/drivers)
+
+ifeq ($(CONFIG_USBHOST_RTL8187),y)
+  CSRCS += usbhost/rtl8187x.c
+endif
+endif
+
+CFLAGS += -I$(TOPDIR)/drivers/usbhost
+
+# --- usbhost end ---
+
+# --- video ---
+
+ifeq ($(CONFIG_VIDEO_DEVICES),y)
+
+# These video drivers depend on I2C support
+
+ifeq ($(CONFIG_I2C),y)
+
+ifeq ($(CONFIG_VIDEO_OV2640),y)
+  CSRCS += video/ov2640.c
+endif
+
+endif
+
+CFLAGS += -I$(TOPDIR)/drivers/video
+
+endif
+
+# --- video end ---
+
+# --- wireless ---
+
+ifeq ($(CONFIG_WIRELESS),y)
+
+# Include wireless drivers
+
+ifeq ($(CONFIG_WL_CC1101),y)
+CSRCS += wireless/cc1101.c wireless/ISM1_868MHzGFSK100kbps.c wireless/ISM2_905MHzGFSK250kbps.c
+endif
+
+ifeq ($(CONFIG_WL_NRF24L01),y)
+CSRCS += wireless/nrf24l01.c
+endif
+
+ifeq ($(CONFIG_WL_CC3000),y)
+
+# --- wireless/cc3000 ---
+
+CSRCS += wireless/cc3000/cc3000.c wireless/cc3000/cc3000_common.c wireless/cc3000/cc3000drv.c wireless/cc3000/evnt_handler.c wireless/cc3000/hci.c wireless/cc3000/netapp.c
+CSRCS += wireless/cc3000/nvmem.c wireless/cc3000/security.c wireless/cc3000/socket.c wireless/cc3000/socket_imp.c wireless/cc3000/wlan.c
+
+CFLAGS += -I$(TOPDIR)/drivers/wireless/cc3000
+
+# --- wireless/cc3000 end ---
+
+endif
+
+CFLAGS += -I$(TOPDIR)/drivers/wireless
+
+endif
+
+# --- wireless end ---
+
+ifneq ($(CONFIG_NFILE_DESCRIPTORS),0)
+  CSRCS += dev_null.c dev_zero.c loop.c
+
+ifneq ($(CONFIG_DISABLE_MOUNTPOINT),y)
+  CSRCS += ramdisk.c
+ifeq ($(CONFIG_DRVR_WRITEBUFFER),y)
+  CSRCS += rwbuffer.c
+else
+ifeq ($(CONFIG_DRVR_READAHEAD),y)
+  CSRCS += rwbuffer.c
+endif
+endif
+endif
+
+ifeq ($(CONFIG_CAN),y)
+  CSRCS += can.c
+endif
+
+ifeq ($(CONFIG_PWM),y)
+  CSRCS += pwm.c
+endif
+
+ifeq ($(CONFIG_WATCHDOG),y)
+  CSRCS += watchdog.c
+endif
+
+ifeq ($(CONFIG_TIMER),y)
+  CSRCS += timer.c
+endif
+endif
+
+: foreach $(ASRCS) |> !as |> {objects}
+: foreach $(CSRCS) |> !cc |> {objects}
+: foreach $(CXXSRCS) |> !cxx |> {objects}
+: {objects} |> !ar |> lib%d.a

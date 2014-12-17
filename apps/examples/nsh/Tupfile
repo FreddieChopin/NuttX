@@ -1,0 +1,18 @@
+#
+# file: nuttx/examples/nsh/Tupfile
+#
+# author: Freddie Chopin, http://www.freddiechopin.info http://www.distortec.com
+# date: 2014-12-17
+#
+
+ifeq (@(EXAMPLES_NSH),y)
+
+include_rules
+
+CSRCS += nsh_main.c
+
+: foreach $(ASRCS) |> !as |>
+: foreach $(CSRCS) |> !cc |>
+: foreach $(CXXSRCS) |> !cxx |>
+
+endif

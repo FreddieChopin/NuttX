@@ -1,0 +1,301 @@
+#
+# file: nuttx/fs/Tupfile
+#
+# author: Freddie Chopin, http://www.freddiechopin.info http://www.distortec.com
+# date: 2014-12-17
+#
+
+include_rules
+
+CFLAGS += -D__KERNEL__
+
+ASRCS =
+
+CSRCS = fs_initialize.c
+
+# --- inode ---
+
+ifneq ($(CONFIG_NFILE_DESCRIPTORS),0)
+
+CSRCS += inode/fs_files.c inode/fs_foreachinode.c inode/fs_inode.c inode/fs_inodeaddref.c
+CSRCS += inode/fs_inodebasename.c inode/fs_inodefind.c inode/fs_inoderelease.c
+CSRCS += inode/fs_inoderemove.c inode/fs_inodereserve.c
+
+endif
+
+# --- inode end ---
+
+# --- vfs ---
+
+ifeq ($(CONFIG_NFILE_DESCRIPTORS),0)
+ifneq ($(CONFIG_NSOCKET_DESCRIPTORS),0)
+
+# Socket descriptor support
+
+CSRCS += vfs/fs_close.c vfs/fs_read.c vfs/fs_write.c vfs/fs_ioctl.c vfs/fs_poll.c vfs/fs_select.c
+
+# Support for positional file access
+
+CSRCS += vfs/fs_pread.c vfs/fs_pwrite.c
+
+# Support for network access using streams
+
+ifneq ($(CONFIG_NFILE_STREAMS),0)
+CSRCS += vfs/fs_fdopen.c
+endif
+
+# Support for sendfile()
+
+ifeq ($(CONFIG_NET_SENDFILE),y)
+CSRCS += vfs/fs_sendfile.c
+endif
+
+endif
+
+else
+
+# Common file/socket descriptor support
+
+CSRCS += vfs/fs_close.c vfs/fs_dup.c vfs/fs_dup2.c vfs/fs_fcntl.c vfs/fs_dupfd.c vfs/fs_dupfd2.c
+CSRCS += vfs/fs_fsync.c vfs/fs_getfilep.c vfs/fs_ioctl.c vfs/fs_lseek.c vfs/fs_mkdir.c vfs/fs_open.c
+CSRCS += vfs/fs_poll.c vfs/fs_read.c vfs/fs_rename.c vfs/fs_rmdir.c vfs/fs_stat.c vfs/fs_statfs.c
+CSRCS += vfs/fs_select.c vfs/fs_unlink.c vfs/fs_write.c
+
+# Support for positional file access
+
+CSRCS += vfs/fs_pread.c vfs/fs_pwrite.c
+
+# Stream support
+
+ifneq ($(CONFIG_NFILE_STREAMS),0)
+CSRCS += vfs/fs_fdopen.c
+endif
+
+# Support for sendfile()
+
+ifeq ($(CONFIG_NET_SENDFILE),y)
+CSRCS += vfs/fs_sendfile.c
+endif
+
+endif
+
+# --- vfs end ---
+
+# --- driver ---
+
+ifneq ($(CONFIG_NFILE_DESCRIPTORS),0)
+
+CSRCS += driver/fs_registerdriver.c driver/fs_unregisterdriver.c
+CSRCS += driver/fs_registerblockdriver.c driver/fs_unregisterblockdriver.c
+CSRCS += driver/fs_findblockdriver.c driver/fs_openblockdriver.c driver/fs_closeblockdriver.c
+
+# System logging to a character device (or file)
+
+ifeq ($(CONFIG_SYSLOG),y)
+ifeq ($(CONFIG_SYSLOG_CHAR),y)
+CSRCS += driver/fs_devsyslog.c
+endif
+endif
+
+endif
+
+# --- driver end ---
+
+# --- dirent ---
+
+ifneq ($(CONFIG_NFILE_DESCRIPTORS),0)
+
+CSRCS += dirent/fs_closedir.c dirent/fs_opendir.c dirent/fs_readdir.c dirent/fs_rewinddir.c dirent/fs_seekdir.c
+
+endif
+
+# --- dirent end ---
+
+# --- aio ---
+
+ifeq ($(CONFIG_FS_AIO),y)
+
+# Add the asynchronous I/O C files to the build
+
+CSRCS += aio/aio_cancel.c aio/aioc_contain.c aio/aio_fsync.c aio/aio_initialize.c
+CSRCS += aio/aio_queue.c aio/aio_read.c aio/aio_signal.c aio/aio_write.c
+
+endif
+
+# --- aio end ---
+
+# --- mmap ---
+
+ASRCS +=
+CSRCS += mmap/fs_mmap.c
+
+ifeq ($(CONFIG_FS_RAMMAP),y)
+CSRCS += mmap/fs_munmap.c mmap/fs_rammap.c
+endif
+
+# --- mmap end ---
+
+
+# OS resources
+
+# --- semaphore ---
+
+ifeq ($(CONFIG_FS_NAMED_SEMAPHORES),y)
+
+CSRCS += semaphore/sem_open.c semaphore/sem_close.c semaphore/sem_unlink.c
+
+endif
+
+# --- semaphore end ---
+
+# --- mqueue ---
+
+ifneq ($(CONFIG_DISABLE_MQUEUE),y)
+
+CSRCS += mqueue/mq_open.c mqueue/mq_close.c mqueue/mq_unlink.c
+
+endif
+
+# --- mqueue end ---
+
+# --- shm ---
+
+ifeq ($(CONFIG_FS_SHM),y)
+
+CSRCS += shm/shm_open.c shm/shm_close.c
+
+endif
+
+# --- shm end ---
+
+
+# Additional files required is mount-able file systems are supported
+
+ifneq ($(CONFIG_NFILE_DESCRIPTORS),0)
+ifneq ($(CONFIG_DISABLE_MOUNTPOINT),y)
+
+# --- mount ---
+
+ifneq ($(CONFIG_NFILE_DESCRIPTORS),0)
+ifneq ($(CONFIG_DISABLE_MOUNTPOINT),y)
+
+CSRCS += mount/fs_mount.c mount/fs_umount.c mount/fs_foreachmountpoint.c
+
+ifeq ($(CONFIG_FS_AUTOMOUNTER),y)
+CSRCS += mount/fs_automount.c
+endif
+
+endif
+endif
+
+# --- mount end ---
+
+# --- fat ---
+
+ifeq ($(CONFIG_FS_FAT),y)
+# Files required for FAT file system support
+
+ASRCS +=
+CSRCS += fat/fs_fat32.c fat/fs_fat32dirent.c fat/fs_fat32attrib.c fat/fs_fat32util.c
+
+# Files required for mkfatfs utility function
+
+ASRCS +=
+CSRCS += fat/fs_mkfatfs.c fat/fs_configfat.c fat/fs_writefat.c
+
+endif
+
+# --- fat end ---
+
+# --- romfs ---
+
+ifeq ($(CONFIG_FS_ROMFS),y)
+# Files required for ROMFS file system support
+
+ASRCS +=
+CSRCS += romfs/fs_romfs.c romfs/fs_romfsutil.c
+
+endif
+
+# --- romfs end ---
+
+# --- nxffs ---
+
+ifeq ($(CONFIG_FS_NXFFS),y)
+ASRCS +=
+CSRCS += nxffs/nxffs_block.c nxffs/nxffs_blockstats.c nxffs/nxffs_cache.c nxffs/nxffs_dirent.c \
+		 nxffs/nxffs_dump.c nxffs/nxffs_initialize.c nxffs/nxffs_inode.c nxffs/nxffs_ioctl.c \
+		 nxffs/nxffs_open.c nxffs/nxffs_pack.c nxffs/nxffs_read.c nxffs/nxffs_reformat.c \
+		 nxffs/nxffs_stat.c nxffs/nxffs_unlink.c nxffs/nxffs_util.c nxffs/nxffs_write.c
+
+endif
+
+# --- nxffs end ---
+
+# --- nfs ---
+
+ifeq ($(CONFIG_NFS),y)
+# Files required for NFS file system support
+
+ASRCS +=
+CSRCS +=
+
+# Files required for NFS RPC
+
+ASRCS +=
+CSRCS += nfs/rpc_clnt.c nfs/nfs_util.c nfs/nfs_vfsops.c
+
+endif
+
+# --- nfs end ---
+
+# --- smartfs ---
+
+ifeq ($(CONFIG_FS_SMARTFS),y)
+
+# Files required for SmartFS file system support
+
+ASRCS +=
+CSRCS += smartfs/smartfs_smart.c smartfs/smartfs_utils.c smartfs/smartfs_procfs.c
+
+# Files required for mksmartfs utility function
+
+ASRCS +=
+CSRCS += smartfs/smartfs_mksmartfs.c
+
+endif
+
+# --- smartfs end ---
+
+# --- binfs ---
+
+ifeq ($(CONFIG_FS_BINFS),y)
+# Files required for BINFS file system support
+
+ASRCS +=
+CSRCS += binfs/fs_binfs.c
+
+endif
+
+# --- binfs end ---
+
+# --- procfs ---
+
+ifeq ($(CONFIG_FS_PROCFS),y)
+# Files required for procfs file system support
+
+ASRCS +=
+CSRCS += procfs/fs_procfs.c procfs/fs_procfsutil.c procfs/fs_procfsproc.c procfs/fs_procfsuptime.c
+CSRCS += procfs/fs_procfscpuload.c
+
+endif
+
+# --- procfs end ---
+
+endif
+endif
+
+: foreach $(ASRCS) |> !as |> {objects}
+: foreach $(CSRCS) |> !cc |> {objects}
+: foreach $(CXXSRCS) |> !cxx |> {objects}
+: {objects} |> !ar |> lib%d.a

@@ -1,0 +1,16 @@
+#
+# file: apps/Tupfile
+#
+# author: Freddie Chopin, http://www.freddiechopin.info http://www.distortec.com
+# date: 2014-12-17
+#
+
+include_rules
+
+OBJECTS =
+OBJECTS += builtin/*.o
+OBJECTS += examples/nsh/*.o
+OBJECTS += nshlib/*.o
+OBJECTS += system/readline/*.o
+
+: $(OBJECTS) |> !ar |> lib%d.a

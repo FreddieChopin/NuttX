@@ -1,0 +1,25 @@
+#
+# file: apps/system/readline/Tupfile
+#
+# author: Freddie Chopin, http://www.freddiechopin.info http://www.distortec.com
+# date: 2014-12-17
+#
+
+ifeq (@(SYSTEM_READLINE),y)
+
+include_rules
+
+ASRCS =
+CSRCS = readline_common.c
+
+ifeq ($(CONFIG_NFILE_STREAMS),0)
+CSRCS += std_readline.c
+else
+CSRCS += readline.c
+endif
+
+: foreach $(ASRCS) |> !as |>
+: foreach $(CSRCS) |> !cc |>
+: foreach $(CXXSRCS) |> !cxx |>
+
+endif

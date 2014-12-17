@@ -1,0 +1,117 @@
+#
+# file: nuttx/binfmt/Tupfile
+#
+# author: Freddie Chopin, http://www.freddiechopin.info http://www.distortec.com
+# date: 2014-12-17
+#
+
+include_rules
+
+CFLAGS += -D__KERNEL__
+CFLAGS += -I"$(TOPDIR)/sched"
+
+# Basic BINFMT source files
+
+BINFMT_ASRCS  =
+BINFMT_CSRCS  = binfmt_globals.c binfmt_register.c binfmt_unregister.c
+BINFMT_CSRCS += binfmt_loadmodule.c binfmt_unloadmodule.c binfmt_execmodule.c
+BINFMT_CSRCS += binfmt_exec.c binfmt_dumpmodule.c
+
+ifeq ($(CONFIG_BINFMT_EXEPATH),y)
+BINFMT_CSRCS += binfmt_exepath.c
+endif
+
+ifeq ($(CONFIG_SCHED_HAVE_PARENT),y)
+BINFMT_CSRCS += binfmt_schedunload.c
+endif
+
+# Symbol table source files
+
+BINFMT_CSRCS += symtab_findbyname.c symtab_findbyvalue.c
+BINFMT_CSRCS += symtab_findorderedbyname.c symtab_findorderedbyvalue.c
+
+ifeq ($(CONFIG_LIBC_EXECFUNCS),y)
+BINFMT_CSRCS += binfmt_execsymtab.c
+endif
+
+# --- libnxflat ---
+
+ifeq ($(CONFIG_NXFLAT),y)
+
+# NXFLAT application interfaces
+
+BINFMT_CSRCS += nxflat.c
+
+# NXFLAT library
+
+BINFMT_CSRCS += libnxflat/libnxflat_init.c libnxflat/libnxflat_uninit.c libnxflat/libnxflat_addrenv.c
+BINFMT_CSRCS += libnxflat/libnxflat_load.c libnxflat/libnxflat_unload.c libnxflat/libnxflat_verify.c
+BINFMT_CSRCS += libnxflat/libnxflat_read.c libnxflat/libnxflat_bind.c
+
+endif
+
+# --- libnxflat end ---
+
+# --- libelf ---
+
+ifeq ($(CONFIG_ELF),y)
+
+# ELF application interfaces
+
+BINFMT_CSRCS += elf.c
+
+# ELF library
+
+BINFMT_CSRCS += libelf/libelf_bind.c libelf/libelf_init.c libelf/libelf_addrenv.c libelf/libelf_iobuffer.c
+BINFMT_CSRCS += libelf/libelf_load.c libelf/libelf_read.c libelf/libelf_sections.c libelf/libelf_symbols.c
+BINFMT_CSRCS += libelf/libelf_uninit.c libelf/libelf_unload.c libelf/libelf_verify.c
+
+ifeq ($(CONFIG_BINFMT_CONSTRUCTORS),y)
+BINFMT_CSRCS += libelf/libelf_ctors.c libelf/libelf_dtors.c
+endif
+
+endif
+
+# --- libelf end ---
+
+# --- libbuiltin ---
+
+ifeq ($(CONFIG_BUILTIN),y)
+
+# Builtin application interfaces
+
+BINFMT_CSRCS += builtin.c
+
+# Builtin library interfaces
+
+BINFMT_CSRCS += libbuiltin/libbuiltin_getname.c libbuiltin/libbuiltin_isavail.c
+
+endif
+
+# --- libbuiltin end ---
+
+# --- libpcode ---
+
+ifeq ($(CONFIG_PCODE),y)
+
+# P-code application interfaces
+
+BINFMT_CSRCS += pcode.c
+
+# P-code library interfaces
+
+# BINFMT_CSRCS +=
+
+# Add an include path so that P-Code related header files may reside in
+# the libpcode sub-directory
+
+CFLAGS += -I"$(TOPDIR)/binfmt/libpcode"
+
+endif
+
+# --- libpcode end ---
+
+: foreach $(BINFMT_ASRCS) |> !as |> {objects}
+: foreach $(BINFMT_CSRCS) |> !cc |> {objects}
+: foreach $(BINFMT_CXXSRCS) |> !cxx |> {objects}
+: {objects} |> !ar |> lib%d.a

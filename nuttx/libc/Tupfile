@@ -1,0 +1,426 @@
+#
+# file: nuttx/lib/Tupfile
+#
+# author: Freddie Chopin, http://www.freddiechopin.info http://www.distortec.com
+# date: 2014-12-17
+#
+
+include_rules
+
+# --- stdio ---
+
+# Add the stdio C files to the build
+# This first group of C files do not depend on having file descriptors or
+# C streams.
+
+CSRCS += stdio/lib_fileno.c stdio/lib_printf.c stdio/lib_sprintf.c stdio/lib_asprintf.c
+CSRCS += stdio/lib_snprintf.c stdio/lib_libsprintf.c stdio/lib_vsprintf.c stdio/lib_avsprintf.c
+CSRCS += stdio/lib_vsnprintf.c stdio/lib_libvsprintf.c stdio/lib_dprintf.c stdio/lib_vdprintf.c
+CSRCS += stdio/lib_meminstream.c stdio/lib_memoutstream.c stdio/lib_memsistream.c
+CSRCS += stdio/lib_memsostream.c stdio/lib_lowinstream.c stdio/lib_lowoutstream.c
+CSRCS += stdio/lib_zeroinstream.c stdio/lib_nullinstream.c stdio/lib_nulloutstream.c
+CSRCS += stdio/lib_sscanf.c
+
+# The remaining sources files depend upon file descriptors
+
+ifneq ($(CONFIG_NFILE_DESCRIPTORS),0)
+
+CSRCS += stdio/lib_rawinstream.c stdio/lib_rawoutstream.c stdio/lib_rawsistream.c
+CSRCS += stdio/lib_rawsostream.c
+
+# And these depend upon both file descriptors and C streams
+
+ifneq ($(CONFIG_NFILE_STREAMS),0)
+
+CSRCS += stdio/lib_fopen.c stdio/lib_fclose.c stdio/lib_fread.c stdio/lib_libfread.c stdio/lib_fseek.c
+CSRCS += stdio/lib_ftell.c stdio/lib_fsetpos.c stdio/lib_fgetpos.c stdio/lib_fgetc.c stdio/lib_fgets.c
+CSRCS += stdio/lib_gets_s.c stdio/lib_gets.c stdio/lib_libfgets.c stdio/lib_fwrite.c stdio/lib_libfwrite.c
+CSRCS += stdio/lib_fflush.c stdio/lib_libflushall.c stdio/lib_libfflush.c stdio/lib_rdflush.c
+CSRCS += stdio/lib_wrflush.c stdio/lib_fputc.c stdio/lib_puts.c stdio/lib_fputs.c stdio/lib_ungetc.c
+CSRCS += stdio/lib_vprintf.c stdio/lib_fprintf.c stdio/lib_vfprintf.c stdio/lib_stdinstream.c
+CSRCS += stdio/lib_stdoutstream.c stdio/lib_stdsistream.c stdio/lib_stdsostream.c stdio/lib_perror.c
+CSRCS += stdio/lib_feof.c stdio/lib_ferror.c stdio/lib_clearerr.c
+
+endif
+
+ifeq ($(CONFIG_FS_WRITABLE),y)
+CSRCS += stdio/lib_tempnam.c stdio/lib_tmpnam.c
+endif
+endif
+
+# Other support that depends on specific, configured features.
+
+ifeq ($(CONFIG_LIBC_FLOATINGPOINT),y)
+CSRCS += stdio/lib_dtoa.c
+endif
+
+ifeq ($(CONFIG_STDIO_LINEBUFFER),y)
+CSRCS += stdio/lib_libnoflush.c stdio/lib_libsnoflush.c
+endif
+
+# --- stdio end ---
+
+# --- stdlib ---
+
+CSRCS += stdlib/lib_abs.c stdlib/lib_abort.c stdlib/lib_imaxabs.c stdlib/lib_itoa.c stdlib/lib_labs.c
+CSRCS += stdlib/lib_llabs.c stdlib/lib_rand.c stdlib/lib_qsort.c
+CSRCS += stdlib/lib_strtol.c stdlib/lib_strtoll.c stdlib/lib_strtoul.c stdlib/lib_strtoull.c
+CSRCS += stdlib/lib_strtod.c stdlib/lib_checkbase.c
+
+ifeq ($(CONFIG_FS_WRITABLE),y)
+CSRCS += stdlib/lib_mktemp.c stdlib/lib_mkstemp.c
+endif
+
+# --- stdlib end ---
+
+# --- unistd ---
+
+CSRCS += unistd/lib_access.c unistd/lib_getopt.c unistd/lib_getoptargp.c unistd/lib_getoptindp.c
+CSRCS += unistd/lib_getoptoptp.c
+
+ifneq ($(CONFIG_NFILE_DESCRIPTORS),0)
+ifneq ($(CONFIG_DISABLE_ENVIRON),y)
+CSRCS += unistd/lib_chdir.c unistd/lib_getcwd.c
+endif
+
+ifeq ($(CONFIG_LIBC_EXECFUNCS),y)
+CSRCS += unistd/lib_execl.c
+endif
+endif
+
+ifneq ($(CONFIG_DISABLE_SIGNALS),y)
+CSRCS += unistd/lib_sleep.c unistd/lib_usleep.c
+endif
+
+# --- unistd end ---
+
+# --- sched ---
+
+CSRCS += sched/sched_getprioritymax.c sched/sched_getprioritymin.c
+
+ifeq ($(CONFIG_BUILD_PROTECTED),y)
+CSRCS += sched/task_startup.c
+endif
+
+# --- sched end ---
+
+# --- syslog ---
+
+CSRCS += syslog/lib_syslog.c syslog/lib_lowsyslog.c syslog/lib_setlogmask.c
+
+ifeq ($(CONFIG_SYSLOG),y)
+CSRCS += syslog/lib_syslogstream.c
+endif
+
+# --- syslog end ---
+
+# --- string ---
+
+CSRCS += string/lib_isbasedigit.c string/lib_memset.c string/lib_memchr.c string/lib_memccpy.c
+CSRCS += string/lib_memcmp.c string/lib_memmove.c string/lib_skipspace.c string/lib_stpcpy.c
+CSRCS += string/lib_strcasecmp.c string/lib_strcat.c string/lib_strchr.c string/lib_strcpy.c
+CSRCS += string/lib_strcmp.c string/lib_strcspn.c string/lib_strdup.c string/lib_strerror.c string/lib_strlen.c
+CSRCS += string/lib_strnlen.c string/lib_strncasecmp.c string/lib_strncat.c string/lib_strncmp.c
+CSRCS += string/lib_strncpy.c string/lib_strndup.c string/lib_strcasestr.c string/lib_strpbrk.c
+CSRCS += string/lib_strrchr.c string/lib_strspn.c string/lib_strstr.c string/lib_strtok.c string/lib_strtokr.c
+
+ifneq ($(CONFIG_ARCH_MEMCPY),y)
+ifeq ($(CONFIG_MEMCPY_VIK),y)
+CSRCS += string/lib_vikmemcpy.c
+else
+CSRCS += string/lib_memcpy.c
+endif
+endif
+
+# --- string end ---
+
+# --- aio ---
+
+ifeq ($(CONFIG_FS_AIO),y)
+
+# Add the asynchronous I/O C files to the build
+
+CSRCS += aio/aio_error.c aio/aio_return.c aio/aio_suspend.c aio/lio_listio.c
+
+endif
+
+# --- aio end ---
+
+# --- pthread ---
+
+# Add the pthread C files to the build
+
+CSRCS += pthread/pthread_attrinit.c pthread/pthread_attrdestroy.c \
+		  pthread/pthread_attrsetschedpolicy.c pthread/pthread_attrgetschedpolicy.c \
+		  pthread/pthread_attrsetinheritsched.c pthread/pthread_attrgetinheritsched.c \
+		  pthread/pthread_attrsetstacksize.c pthread/pthread_attrgetstacksize.c \
+		  pthread/pthread_attrsetschedparam.c pthread/pthread_attrgetschedparam.c \
+		  pthread/pthread_barrierattrinit.c pthread/pthread_barrierattrdestroy.c \
+		  pthread/pthread_barrierattrgetpshared.c pthread/pthread_barrierattrsetpshared.c \
+		  pthread/pthread_condattrinit.c pthread/pthread_condattrdestroy.c \
+		  pthread/pthread_mutexattrinit.c pthread/pthread_mutexattrdestroy.c \
+		  pthread/pthread_mutexattrgetpshared.c pthread/pthread_mutexattrsetpshared.c
+
+ifeq ($(CONFIG_MUTEX_TYPES),y)
+CSRCS += pthread/pthread_mutexattrsettype.c pthread/pthread_mutexattrgettype.c
+endif
+
+ifeq ($(CONFIG_BUILD_PROTECTED),y)
+CSRCS += pthread/pthread_startup.c
+endif
+
+# --- pthread end ---
+
+# --- semaphore ---
+
+CSRCS += semaphore/sem_init.c semaphore/sem_getvalue.c
+
+# --- semaphore end ---
+
+# --- signal ---
+
+ifneq ($(CONFIG_DISABLE_SIGNALS),y)
+
+# Add the signal C files to the build
+
+CSRCS += signal/sig_emptyset.c signal/sig_fillset.c signal/sig_addset.c signal/sig_delset.c signal/sig_ismember.c
+
+endif
+
+# --- signal end ---
+
+# --- mqueue ---
+
+ifneq ($(CONFIG_DISABLE_MQUEUE),y)
+
+# Add the mqueue C files to the build
+
+CSRCS += mqueue/mq_setattr.c mqueue/mq_getattr.c
+
+endif
+
+# --- mqueue end ---
+
+# --- math ---
+
+ifeq ($(CONFIG_LIBM),y)
+
+# Add the floating point math C files to the build
+
+CSRCS += math/lib_acosf.c math/lib_asinf.c math/lib_atan2f.c math/lib_atanf.c math/lib_ceilf.c math/lib_cosf.c
+CSRCS += math/lib_coshf.c  math/lib_expf.c math/lib_fabsf.c math/lib_floorf.c math/lib_fmodf.c math/lib_frexpf.c
+CSRCS += math/lib_ldexpf.c math/lib_logf.c math/lib_log10f.c math/lib_log2f.c math/lib_modff.c math/lib_powf.c
+CSRCS += math/lib_rintf.c math/lib_roundf.c math/lib_sinf.c math/lib_sinhf.c math/lib_sqrtf.c math/lib_tanf.c
+CSRCS += math/lib_tanhf.c
+
+CSRCS += math/lib_acos.c math/lib_asin.c math/lib_atan.c math/lib_atan2.c math/lib_ceil.c math/lib_cos.c
+CSRCS += math/lib_cosh.c math/lib_exp.c math/lib_fabs.c math/lib_floor.c math/lib_fmod.c math/lib_frexp.c
+CSRCS += math/lib_ldexp.c math/lib_log.c math/lib_log10.c math/lib_log2.c math/lib_modf.c math/lib_pow.c
+CSRCS += math/lib_rint.c math/lib_round.c math/lib_sin.c math/lib_sinh.c math/lib_sqrt.c math/lib_tan.c
+CSRCS += math/lib_tanh.c
+
+CSRCS += math/lib_acosl.c math/lib_asinl.c math/lib_atan2l.c math/lib_atanl.c math/lib_ceill.c math/lib_cosl.c
+CSRCS += math/lib_coshl.c math/lib_expl.c math/lib_fabsl.c math/lib_floorl.c math/lib_fmodl.c math/lib_frexpl.c
+CSRCS += math/lib_ldexpl.c math/lib_logl.c math/lib_log10l.c math/lib_log2l.c math/lib_modfl.c math/lib_powl.c
+CSRCS += math/lib_rintl.c math/lib_roundl.c math/lib_sinl.c math/lib_sinhl.c math/lib_sqrtl.c math/lib_tanl.c
+CSRCS += math/lib_tanhl.c
+
+CSRCS += math/lib_libexpi.c math/lib_libsqrtapprox.c
+
+endif
+
+# --- math end ---
+
+# --- fixedmath ---
+
+CSRCS += fixedmath/lib_fixedmath.c fixedmath/lib_b16sin.c fixedmath/lib_b16cos.c fixedmath/lib_b16atan2.c
+
+# --- fixedmath end ---
+
+# --- net ---
+
+# Add the networking C files to the build
+
+CSRCS += net/lib_etherntoa.c net/lib_htons.c net/lib_htonl.c net/lib_inetaddr.c
+CSRCS += net/lib_inetntoa.c net/lib_inetntop.c net/lib_inetpton.c
+
+# Routing table support
+
+ifeq ($(CONFIG_NET_ROUTE),y)
+CSRCS += net/lib_addroute.c net/lib_delroute.c
+endif
+
+# --- net end ---
+
+# --- time ---
+
+# Add the time C files to the build
+
+CSRCS += time/lib_strftime.c time/lib_calendar2utc.c time/lib_daysbeforemonth.c
+CSRCS += time/lib_isleapyear.c time/lib_time.c
+
+ifeq ($(CONFIG_LIBC_LOCALTIME),y)
+CSRCS += time/lib_localtime.c
+else
+CSRCS += time/lib_mktime.c time/lib_gmtime.c time/lib_gmtimer.c
+endif
+
+# --- time end ---
+
+# --- libgen ---
+
+CSRCS += libgen/lib_basename.c libgen/lib_dirname.c
+
+# --- libgen end ---
+
+# --- dirent ---
+
+ifneq ($(CONFIG_NFILE_DESCRIPTORS),0)
+
+# Add the dirent C files to the build
+
+CSRCS += dirent/lib_readdirr.c dirent/lib_telldir.c
+
+endif
+
+# --- dirent end ---
+
+# --- termios ---
+
+ifneq ($(CONFIG_NFILE_DESCRIPTORS),0)
+ifeq ($(CONFIG_SERIAL_TERMIOS),y)
+
+# Add the termios C files to the build
+
+CSRCS += termios/lib_cfgetspeed.c termios/lib_cfsetspeed.c termios/lib_isatty.c termios/lib_tcflush.c
+CSRCS += termios/lib_tcgetattr.c termios/lib_tcsetattr.c
+
+endif
+endif
+
+# --- termios end ---
+
+# --- spawn ---
+
+CSRCS += spawn/lib_psfa_addaction.c spawn/lib_psfa_addclose.c spawn/lib_psfa_adddup2.c
+CSRCS += spawn/lib_psfa_addopen.c spawn/lib_psfa_destroy.c spawn/lib_psfa_init.c
+
+ifeq ($(CONFIG_DEBUG),y)
+CSRCS += spawn/lib_psfa_dump.c
+endif
+
+CSRCS += spawn/lib_psa_getflags.c spawn/lib_psa_getschedparam.c spawn/lib_psa_getschedpolicy.c
+CSRCS += spawn/lib_psa_init.c spawn/lib_psa_setflags.c spawn/lib_psa_setschedparam.c
+CSRCS += spawn/lib_psa_setschedpolicy.c
+
+ifneq ($(CONFIG_DISABLE_SIGNALS),y)
+CSRCS += spawn/lib_psa_getsigmask.c spawn/lib_psa_setsigmask.c
+endif
+
+ifneq ($(CONFIG_BUILD_KERNEL),y)
+CSRCS += spawn/lib_psa_getstacksize.c spawn/lib_psa_setstacksize.c
+endif
+
+ifeq ($(CONFIG_DEBUG),y)
+CSRCS += spawn/lib_psa_dump.c
+endif
+
+# --- spawn end ---
+
+# --- queue ---
+
+CSRCS += queue/sq_addlast.c queue/sq_addfirst.c queue/sq_addafter.c \
+		  queue/sq_rem.c queue/sq_remlast.c queue/sq_remfirst.c queue/sq_remafter.c
+
+CSRCS += queue/dq_addlast.c queue/dq_addfirst.c queue/dq_addafter.c queue/dq_addbefore.c \
+		  queue/dq_rem.c queue/dq_remlast.c queue/dq_remfirst.c
+
+# --- queue end ---
+
+# --- wqueue ---
+
+ifeq ($(CONFIG_LIB_USRWORK),y)
+
+# Add the work queue C files to the build
+
+WORK_CSRCS += wqueue/work_usrthread.c wqueue/work_queue.c wqueue/work_cancel.c wqueue/work_signal.c
+WORK_CSRCS += wqueue/work_lock.c
+
+# Protected mode
+
+ifeq ($(CONFIG_BUILD_PROTECTED),y)
+CSRCS += $(WORK_CSRCS)
+
+else
+
+# Kernel mode
+
+ifeq ($(CONFIG_BUILD_KERNEL),y)
+CSRCS += $(WORK_CSRCS)
+
+endif
+endif
+endif
+
+# --- wqueue end ---
+
+# --- misc ---
+
+# Add the internal C files to the build
+
+CSRCS += misc/lib_stream.c misc/lib_filesem.c
+
+# Add C files that depend on file OR socket descriptors
+
+ifneq ($(CONFIG_NFILE_DESCRIPTORS),0)
+
+CSRCS += misc/lib_sendfile.c
+ifneq ($(CONFIG_NFILE_STREAMS),0)
+CSRCS += misc/lib_streamsem.c
+endif
+
+else
+ifneq ($(CONFIG_NSOCKET_DESCRIPTORS),0)
+
+CSRCS += misc/lib_sendfile.c
+ifneq ($(CONFIG_NFILE_STREAMS),0)
+CSRCS += misc/lib_streamsem.c
+endif
+
+endif
+endif
+
+# Add the miscellaneous C files to the build
+
+CSRCS += misc/lib_match.c misc/lib_crc32.c misc/lib_crc16.c misc/lib_dumpbuffer.c
+
+ifeq ($(CONFIG_DEBUG),y)
+CSRCS += misc/lib_dbg.c
+endif
+
+# Keyboard driver encoder/decoder
+
+ifeq ($(CONFIG_LIB_KBDCODEC),y)
+CSRCS += misc/lib_kbdencode.c misc/lib_kbddecode.c
+endif
+
+# SLCD driver encoder/decoder
+
+ifeq ($(CONFIG_LIB_SLCDCODEC),y)
+CSRCS += misc/lib_slcdencode.c misc/lib_slcddecode.c
+endif
+
+# --- misc end ---
+
+# --- audio ---
+
+ifeq ($(CONFIG_AUDIO),y)
+CSRCS += audio/lib_buffer.c
+endif
+
+# --- audio end ---
+
+: foreach $(ASRCS) |> !as |> {objects}
+: foreach $(CSRCS) |> !cc |> {objects}
+: foreach $(CXXSRCS) |> !cxx |> {objects}
+: {objects} |> !ar |> liblib.a

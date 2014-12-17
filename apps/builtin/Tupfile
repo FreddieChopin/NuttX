@@ -1,0 +1,24 @@
+#
+# file: apps/builtin/Tupfile
+#
+# author: Freddie Chopin, http://www.freddiechopin.info http://www.distortec.com
+# date: 2014-12-17
+#
+
+ifeq (@(BUILTIN),y)
+
+include_rules
+
+ASRCS		=
+CSRCS		= builtin.c builtin_list.c exec_builtin.c
+
+: |> touch %o |> registry/dummy.pdat
+: |> touch %o |> registry/dummy.bdat
+: registry/*.pdat |> cat %f > %o |> builtin_proto.h {generated}
+: registry/*.bdat |> cat %f > %o |> builtin_list.h {generated}
+
+: foreach $(ASRCS) | {generated} |> !as |>
+: foreach $(CSRCS) | {generated} |> !cc |>
+: foreach $(CXXSRCS) | {generated} |> !cxx |>
+
+endif

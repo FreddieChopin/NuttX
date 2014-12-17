@@ -1,0 +1,27 @@
+#
+# file: nuttx/libxx/Tupfile
+#
+# author: Freddie Chopin, http://www.freddiechopin.info http://www.distortec.com
+# date: 2014-12-17
+#
+
+include_rules
+
+CXXSRCS  = libxx_cxapurevirtual.cxx libxx_eabi_atexit.cxx  libxx_cxa_atexit.cxx
+
+# Some of the libxx/ files are not need if uClibc++ is installed because
+# uClibx++ replaces them
+
+ifneq ($(CONFIG_UCLIBCXX),y)
+CXXSRCS += libxx_delete.cxx libxx_deletea.cxx libxx_new.cxx libxx_newa.cxx
+CXXSRCS += libxx_stdthrow.cxx
+else
+ifneq ($(UCLIBCXX_EXCEPTION),y)
+CXXSRCS += libxx_stdthrow.cxx
+endif
+endif
+
+: foreach $(ASRCS) |> !as |> {objects}
+: foreach $(CSRCS) |> !cc |> {objects}
+: foreach $(CXXSRCS) |> !cxx |> {objects}
+: {objects} |> !ar |> lib%d.a

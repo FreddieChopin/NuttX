@@ -1,0 +1,86 @@
+#
+# file: nuttx/mm/Tupfile
+#
+# author: Freddie Chopin, http://www.freddiechopin.info http://www.distortec.com
+# date: 2014-12-17
+#
+
+include_rules
+
+# --- mm_heap ---
+
+# Core heap allocator logic
+
+CSRCS += mm_heap/mm_initialize.c mm_heap/mm_sem.c mm_heap/mm_addfreechunk.c mm_heap/mm_size2ndx.c
+CSRCS += mm_heap/mm_shrinkchunk.c
+CSRCS += mm_heap/mm_brkaddr.c mm_heap/mm_calloc.c mm_heap/mm_extend.c mm_heap/mm_free.c mm_heap/mm_mallinfo.c
+CSRCS += mm_heap/mm_malloc.c mm_heap/mm_memalign.c mm_heap/mm_realloc.c mm_heap/mm_zalloc.c
+
+ifeq ($(CONFIG_BUILD_KERNEL),y)
+CSRCS += mm_heap/mm_sbrk.c
+endif
+
+# --- mm_heap end ---
+
+# --- umm_heap ---
+
+# User heap allocator
+
+CSRCS += umm_heap/umm_initialize.c umm_heap/umm_addregion.c umm_heap/umm_sem.c
+CSRCS += umm_heap/umm_brkaddr.c umm_heap/umm_calloc.c umm_heap/umm_extend.c umm_heap/umm_free.c umm_heap/umm_mallinfo.c
+CSRCS += umm_heap/umm_malloc.c umm_heap/umm_memalign.c umm_heap/umm_realloc.c umm_heap/umm_zalloc.c
+
+ifeq ($(CONFIG_BUILD_KERNEL),y)
+CSRCS += umm_heap/umm_sbrk.c
+endif
+
+# --- umm_heap end ---
+
+# --- kmm_heap ---
+
+ifeq ($(CONFIG_MM_KERNEL_HEAP),y)
+CSRCS += kmm_heap/kmm_initialize.c kmm_heap/kmm_addregion.c kmm_heap/kmm_sem.c
+CSRCS += kmm_heap/kmm_brkaddr.c kmm_heap/kmm_calloc.c kmm_heap/kmm_extend.c kmm_heap/kmm_free.c kmm_heap/kmm_mallinfo.c
+CSRCS += kmm_heap/kmm_malloc.c kmm_heap/kmm_memalign.c kmm_heap/kmm_realloc.c kmm_heap/kmm_zalloc.c
+
+ifeq ($(CONFIG_BUILD_KERNEL),y)
+CSRCS += kmm_heap/kmm_sbrk.c
+endif
+
+ifeq ($(CONFIG_DEBUG),y)
+CSRCS += kmm_heap/kmm_heapmember.c
+endif
+
+endif
+
+# --- kmm_heap end ---
+
+# --- mm_gran ---
+
+ifeq ($(CONFIG_GRAN),y)
+CSRCS += mm_gran/mm_graninit.c mm_gran/mm_granrelease.c mm_gran/mm_granreserve.c mm_gran/mm_granalloc.c
+CSRCS += mm_gran/mm_granmark.c mm_gran/mm_granfree.c mm_gran/mm_grancritical.c
+
+# A page allocator based on the granule allocator
+
+ifeq ($(CONFIG_MM_PGALLOC),y)
+CSRCS += mm_gran/mm_pgalloc.c
+endif
+
+endif
+
+# --- mm_gran end ---
+
+# --- shm ---
+
+ifeq ($(CONFIG_MM_SHM),y)
+CSRCS += shm/shm_initialize.c
+CSRCS += shm/shmat.c shm/shmctl.c shm/shmdt.c shm/shmget.c
+endif
+
+# --- shm end ---
+
+: foreach $(ASRCS) |> !as |> {objects}
+: foreach $(CSRCS) |> !cc |> {objects}
+: foreach $(CXXSRCS) |> !cxx |> {objects}
+: {objects} |> !ar |> lib%d.a
