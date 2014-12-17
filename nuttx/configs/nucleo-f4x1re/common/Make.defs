@@ -12,6 +12,13 @@
 # includes are done by proxy Make.defs in $(TOPDIR)
 # linker script is selected by proxy Make.defs in $(TOPDIR)
 
+# C++ language standard ("c++98", "gnu++98" - default, "c++0x", "gnu++0x")
+CXX_STD = gnu++11
+
+# C language standard ("c89" / "iso9899:1990", "iso9899:199409",
+# "c99" / "iso9899:1999", "gnu89" - default, "gnu99")
+C_STD = gnu99
+
 ifeq ($(OS),Windows_NT)
 	DIRLINK = $(TOPDIR)/tools/copydir.sh
 else
@@ -37,15 +44,15 @@ ARCHCCVERSION = ${shell $(CC) -v 2>&1 | sed -n '/^gcc version/p' | sed -e 's/^gc
 ARCHCCMAJOR = ${shell echo $(ARCHCCVERSION) | cut -d'.' -f1}
 
 ifeq ($(CONFIG_DEBUG_SYMBOLS),y)
-  ARCHOPTIMIZATION = -g
+  ARCHOPTIMIZATION += -g -ggdb3
 endif
 
 ifneq ($(CONFIG_DEBUG_NOOPT),y)
   ARCHOPTIMIZATION += $(MAXOPTIMIZATION) -fno-strict-aliasing -fno-strength-reduce -fomit-frame-pointer
 endif
 
-ARCHCFLAGS = -fno-builtin
-ARCHCXXFLAGS = -fno-builtin -fno-exceptions -fno-rtti
+ARCHCFLAGS = -std=$(C_STD) -fno-builtin -ffunction-sections -fdata-sections
+ARCHCXXFLAGS = -std=$(CXX_STD) -fno-builtin -fno-exceptions -fno-rtti -ffunction-sections -fdata-sections
 ARCHWARNINGS = -Wall -Wstrict-prototypes -Wshadow
 ARCHWARNINGSXX = -Wall -Wshadow
 ARCHDEFINES =
@@ -67,11 +74,13 @@ LIBEXT = .a
 EXEEXT =
 
 ifneq ($(CROSSDEV),arm-nuttx-elf-)
-  LDFLAGS += -nostartfiles -nodefaultlibs
+  LDFLAGS += -nostartfiles -nodefaultlibs --gc-sections -Map=$(TOPDIR)/nuttx.map --cref
 endif
 ifeq ($(CONFIG_DEBUG_SYMBOLS),y)
   LDFLAGS += -g
 endif
+
+EXTRA_LIBS += "`$(CC) $(ARCHCPUFLAGS) -print-file-name=libm.a`"
 
 HOSTCC = gcc
 HOSTINCLUDES = -I.
