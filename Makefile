@@ -35,10 +35,17 @@ clean_context:
 distclean:
 	$(MAKE) -C nuttx distclean
 
+tup: nuttx/.config nuttx/Make.defs tup.config
+	$(MAKE) -C nuttx TOPDIR=$(TOPDIR) context
+	tup
+
 nuttx/.config: nuttx/configs/nucleo-f4x1re/f401-nsh/defconfig
 	cp $< nuttx/.config
 
 nuttx/Make.defs: nuttx/configs/nucleo-f4x1re/f401-nsh/Make.defs
 	cp $< nuttx/Make.defs
+
+tup.config: nuttx/.config
+	cp $< $@
 
 .PHONY: all clean clean_context distclean
