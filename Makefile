@@ -6,7 +6,7 @@
 # chip: STM32F401RE
 #
 # author: Freddie Chopin, http://www.freddiechopin.info http://www.distortec.com
-# date: 2014-12-16
+# date: 2014-12-17
 #
 
 ifeq ($(OS),Windows_NT)
@@ -25,19 +25,19 @@ all: nuttx/.config nuttx/Make.defs
 	arm-none-eabi-objdump --demangle -S nuttx/nuttx > nuttx/nuttx.lss 
 	@echo ' '
 	arm-none-eabi-size -B nuttx/nuttx
-	
+
 clean:
 	$(MAKE) -C nuttx clean
-	
+
 clean_context:
 	$(MAKE) -C nuttx clean_context
-	
+
 distclean:
 	$(MAKE) -C nuttx distclean
 
 nuttx/.config: nuttx/configs/nucleo-f4x1re/f401-nsh/defconfig
 	cp $< nuttx/.config
-	
+
 nuttx/Make.defs: nuttx/configs/nucleo-f4x1re/f401-nsh/Make.defs
 	cp $< nuttx/Make.defs
 
