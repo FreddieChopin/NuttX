@@ -1,3 +1,10 @@
+# tup database
+.tup/
+
+# tup configuration
+tup.config
+
+# standard NuttX part
 .depend
 Make.dep
 *.o
