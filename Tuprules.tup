@@ -2,7 +2,7 @@
 # file: Tuprules.tup
 #
 # author: Freddie Chopin, http://www.freddiechopin.info http://www.distortec.com
-# date: 2014-12-17
+# date: 2014-12-18
 #
 
 ROOTDIR = $(TUP_CWD)
@@ -23,9 +23,9 @@ endif
 
 include nuttx/configs/nucleo-f4x1re/common/Make.defs
 
-!as = |> $(CC) -c $(CFLAGS) $(CFLAGS_%f) -D__ASSEMBLY__ %f -o %o |> %B.o
-!cc = |> $(CC) -c $(CFLAGS) $(CFLAGS_%f) %f -o %o |> %B.o
-!cxx = |> $(CXX) -c $(CXXFLAGS) $(CXXFLAGS_%f) %f -o %o |> %B.o
+!as = |> ^c^ $(CC) -c $(CFLAGS) $(CFLAGS_%f) -D__ASSEMBLY__ %f -o %o |> %B.o
+!cc = |> ^c^ $(CC) -c $(CFLAGS) $(CFLAGS_%f) %f -o %o |> %B.o
+!cxx = |> ^c^ $(CXX) -c $(CXXFLAGS) $(CXXFLAGS_%f) %f -o %o |> %B.o
 !ar = |> $(AR) %o %f |> | $(TOPDIR)/<archives>
 !ln = | $(TOPDIR)/<archives> |> $(LD) --entry=__start $(LDFLAGS) $(LIBPATHS) $(EXTRA_LIBPATHS) -o %o $(HEAD_OBJ) \
 		$(EXTRA_OBJS) --start-group $(LDLIBS) -lboard $(EXTRA_LIBS) $(LIBGCC) --end-group |> | nuttx.map
