@@ -2,7 +2,7 @@
 # file: Tuprules.tup
 #
 # author: Freddie Chopin, http://www.freddiechopin.info http://www.distortec.com
-# date: 2014-12-18
+# date: 2014-12-23
 #
 
 ROOTDIR = $(TUP_CWD)
@@ -10,6 +10,7 @@ TOPDIR = $(ROOTDIR)/nuttx
 APPDIR = $(ROOTDIR)/apps
 
 CROSSDEV = arm-none-eabi-
+ARCROSSDEV = $(CROSSDEV)
 ARCHCPUFLAGS = -mcpu=cortex-m4 -mthumb -march=armv7e-m -mfloat-abi=soft
 MAXOPTIMIZATION = -O2
 
