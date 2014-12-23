@@ -5,7 +5,7 @@
 # both make and tup
 #
 # author: Freddie Chopin, http://www.freddiechopin.info http://www.distortec.com
-# date: 2014-12-17
+# date: 2014-12-23
 #
 
 ifeq ($(CONFIG_ARMV7M_CMNVECTOR),y)
@@ -30,38 +30,38 @@ CMN_CSRCS += armv7-m/up_systemreset.c armv7-m/up_unblocktask.c common/up_usestac
 CMN_CSRCS += armv7-m/up_hardfault.c armv7-m/up_svcall.c common/up_vfork.c
 
 ifeq ($(CONFIG_ARMV7M_CMNVECTOR),y)
-CMN_ASRCS += stm32/up_exception.S
-CMN_CSRCS += stm32/up_vectors.c
+CMN_ASRCS += armv7-m/up_exception.S
+CMN_CSRCS += armv7-m/up_vectors.c
 endif
 
 ifeq ($(CONFIG_ARCH_RAMVECTORS),y)
-CMN_CSRCS += stm32/up_ramvec_initialize.c stm32/up_ramvec_attach.c
+CMN_CSRCS += armv7-m/up_ramvec_initialize.c armv7-m/up_ramvec_attach.c
 endif
 
 ifeq ($(CONFIG_ARCH_MEMCPY),y)
-CMN_ASRCS += stm32/up_memcpy.S
+CMN_ASRCS += armv7-m/up_memcpy.S
 endif
 
 ifeq ($(CONFIG_BUILD_PROTECTED),y)
-CMN_CSRCS += stm32/up_mpu.c stm32/up_task_start.c stm32/up_pthread_start.c
+CMN_CSRCS += armv7-m/up_mpu.c common/up_task_start.c common/up_pthread_start.c
 ifneq ($(CONFIG_DISABLE_SIGNALS),y)
-CMN_CSRCS += stm32/up_signal_dispatch.c
-CMN_UASRCS += stm32/up_signal_handler.S
+CMN_CSRCS += armv7-m/up_signal_dispatch.c
+CMN_UASRCS += armv7-m/up_signal_handler.S
 endif
 endif
 
 ifeq ($(CONFIG_DEBUG_STACK),y)
-CMN_CSRCS += stm32/up_checkstack.c
+CMN_CSRCS += common/up_checkstack.c
 endif
 
 ifeq ($(CONFIG_ELF),y)
-CMN_CSRCS += stm32/up_elf.c
+CMN_CSRCS += armv7-m/up_elf.c
 endif
 
 ifeq ($(CONFIG_ARCH_FPU),y)
-CMN_ASRCS += stm32/up_fpu.S
+CMN_ASRCS += armv7-m/up_fpu.S
 ifneq ($(CONFIG_ARMV7M_CMNVECTOR),y)
-CMN_CSRCS += stm32/up_copyarmstate.c
+CMN_CSRCS += armv7-m/up_copyarmstate.c
 endif
 endif
 
